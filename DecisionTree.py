@@ -8,7 +8,7 @@ class Node():
         self.left = left                      # left child node
         self.right = right                    # right child node. Duh
 
-class DecisionTree():
+class DecisionTreeClassifier():
     def __init__(self, max_depth = 5, min_samples = 5):
         self.root = None
         self.max_depth = max_depth

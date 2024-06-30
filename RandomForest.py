@@ -1,4 +1,4 @@
-from DecisionTree import DecisionTree
+from DecisionTree import DecisionTreeClassifier
 import numpy as np
 from tqdm import tqdm
 
@@ -12,7 +12,6 @@ class RandomForest():
         self.min_samples = min_samples
         self.features = []
         self.trees = []
-    
 
     def fit(self, X , Y):
         rng_generator = np.random.default_rng()
@@ -28,7 +27,7 @@ class RandomForest():
                 random_data_points = rng_generator.choice(num_data, int(self.boot_strap * num_data), replace = True)
                 x = x[random_data_points, :]
                 y = Y[random_data_points, :]
-            estimator = DecisionTree(max_depth=self.max_depth, min_samples=self.min_samples)
+            estimator = DecisionTreeClassifier(max_depth=self.max_depth, min_samples=self.min_samples)
             estimator.fit(x, y)
             self.trees.append(estimator)
             self.features.append(random_features_index)
