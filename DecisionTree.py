@@ -87,8 +87,7 @@ class DecisionTree():
                 left_node = self.build_tree(left_dataset, current_depth= current_depth+1)
                 right_node = self.build_tree(right_dataset, current_depth= current_depth+1)
                 return Node(feature, threshold, left_node, right_node)
-            
-        leaf_value = self.calculate_value(data[:, -1].reshape(-1,1))
+        leaf_value = self.calculate_value(data[:, -1])
         return Node(value=leaf_value)
 
 
@@ -103,7 +102,7 @@ class DecisionTree():
         return np.array(predictions)
 
     def make_predictions(self, x, node):
-        if node.value != None:
+        if node.value is not None:
             return node.value
         else :
             feature = node.feature
