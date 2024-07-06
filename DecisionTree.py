@@ -10,6 +10,7 @@ class Node():
 
 class DecisionTreeClassifier():
     def __init__(self, max_depth = 5, min_samples = 5):
+        assert min_samples > 0, "Minimum samples can not be negative or 0"
         self.root = None
         self.max_depth = max_depth
         self.min_samples = min_samples
@@ -61,7 +62,7 @@ class DecisionTreeClassifier():
             unique_values = np.unique(data[:,i])
             for threshold in unique_values:
                 temp_left_data, temp_right_data = self.split_data(data, threshold, i)
-                if len(temp_left_data) and len(temp_right_data):
+                if len(temp_left_data) > self.min_samples and len(temp_right_data) > self.min_samples:
                     gain = self.get_gain(data[:, -1], temp_left_data[:, -1], temp_right_data[:, -1])     
                     if gain > max_gain :
                         best_feature = i
