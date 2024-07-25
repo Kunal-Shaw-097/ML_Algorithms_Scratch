@@ -30,8 +30,9 @@ class Softmax():
         e^x / sum(e^i for i in range(0, num_classes))
         """
         self.exp_x = np.exp(x)
-        self.logits = x / np.sum(x, axis = 1, keepdims=True)
-        return self.logits
+        self.sum_exp_x = np.sum(x, axis = 1, keepdims=True)
+        self.probs = x / self.sum_exp_x
+        return self.probs
 
     def backward(self) -> np.array:
         """
@@ -50,18 +51,21 @@ class CrossEntropy():
         self.mask = None
 
     def forward(self, x : np.array, y : np.array) -> np.array:
-        y_one_hot = np.zeros_like(x)
-        for i in range(x.shape[0]):
-            y_one_hot[i, y[i]] = 1
-        self.mask = y_one_hot
         self.x = x
-        x = x[y_one_hot].sum(axis = 1)
-        loss =  - np.log(x).mean()
+        self.y = y
+        # Clip x to prevent log(0) which gives -inf
+        x_clipped = np.clip(x, 1e-12, 1 - 1e-12)
+        # Compute the loss
+        batch_size = x.shape[0]
+        correct_logprobs = -np.log(x_clipped[range(batch_size), y])
+        loss = np.sum(correct_logprobs) / batch_size
         return loss
     
     def backward(self) -> np.array:
-        self.x[~self.mask] = 0
-        return (1/self.x)
+        batch_size = self.x.shape[0]
+        grads = np.zeros_like(self.x)
+        grads[range(batch_size), self.y] = 1/self.x[range(batch_size), self.y]
+        return grads
 
 class Linear():
     """
@@ -92,6 +96,7 @@ class MLP():
         self.W2 = Linear(hidden_dim, num_classes)
         self.act = ReLU()
         self.softmax = Softmax()
+        self.loss = CrossEntropy()
 
     def forward(self, x : np.array) -> np.array:
         x = self.W1.forward(x) 
@@ -101,5 +106,15 @@ class MLP():
         return x
     
     def backward(self):
+
         pass
+
+    def train(self, X: np.array, Y : np.array, epochs: int = 10, verbose : bool = True) -> None:
+        for i in range(epochs):
+            preds = self.forward(X)
+            loss = self.loss.forward(Y, preds)
+            if verbose :
+                if i % 10 == 9 :
+                    print(f"Loss at epoch {i + 1} is: {loss}")
+            self.backwards(X, Y, preds)
 
